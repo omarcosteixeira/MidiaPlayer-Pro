@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Clock, CloudSun, Wind, Droplets } from "lucide-react";
+import { CloudSun } from "lucide-react";
 import { motion } from "motion/react";
 
 interface WeatherWidgetProps {
@@ -15,66 +15,51 @@ export default function WeatherWidget({ location }: WeatherWidgetProps) {
   }, []);
 
   const formatTime = (date: Date) => {
-    return date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    return date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
   };
 
   const formatDate = (date: Date) => {
-    return date.toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: 'long' });
+    return date.toLocaleDateString('pt-BR', { weekday: 'short', day: '2-digit', month: 'short' }).replace('.', '');
   };
 
   return (
-    <div className="absolute top-12 right-12 flex gap-4 items-start z-50">
-      {/* Time & Date Block */}
-      <div className="text-right">
-        <motion.div 
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="text-white font-black text-7xl tracking-tighter tabular-nums drop-shadow-2xl"
-        >
-          {formatTime(time)}
-        </motion.div>
-        <div className="text-blue-400 font-bold uppercase text-sm tracking-[0.2em] mt-1 drop-shadow-lg opacity-80">
-          {formatDate(time)}
-        </div>
-      </div>
-
-      {/* Weather Info - Hardware Style Widget */}
-      <div className="w-48 bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-4 shadow-2xl">
-        <div className="flex items-center justify-between mb-4">
-          <div className="bg-blue-500/20 p-2 rounded-xl border border-blue-500/30">
-            <CloudSun className="w-6 h-6 text-blue-400" />
+    <div className="absolute bottom-6 left-6 z-50">
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="flex items-center gap-5 bg-black/60 backdrop-blur-xl border border-white/10 rounded-3xl pl-5 pr-6 py-2.5 shadow-2xl"
+      >
+        {/* Time & Date Block */}
+        <div className="flex items-center gap-3">
+          <div className="text-white font-black text-4xl tracking-tighter tabular-nums drop-shadow-xl">
+            {formatTime(time)}
           </div>
-          <div className="text-right">
-            <div className="text-[10px] uppercase font-bold text-gray-400 tracking-widest">Localização</div>
-            <div className="text-white text-xs font-bold truncate max-w-[100px]">{location}</div>
+          <div className="flex flex-col justify-center">
+            <span className="text-blue-400 font-bold uppercase text-[10px] tracking-widest">
+              {formatDate(time)}
+            </span>
+            <span className="text-white/50 text-[10px] uppercase font-bold tracking-widest mt-0.5">
+              {time.getSeconds().toString().padStart(2, '0')} SEG
+            </span>
           </div>
         </div>
 
-        <div className="flex items-end justify-between mb-3">
-          <span className="text-white text-4xl font-black tracking-tighter">24°C</span>
-          <span className="text-gray-400 text-[10px] font-bold uppercase tracking-widest mb-1">Ensolarado</span>
-        </div>
+        {/* Divider */}
+        <div className="w-[1px] h-8 bg-white/10" />
 
-        <div className="grid grid-cols-2 gap-2 pt-3 border-t border-white/10">
-          <div className="flex items-center gap-2">
-            <Droplets className="w-3 h-3 text-blue-400" />
-            <span className="text-[10px] font-mono text-gray-300">65% <span className="opacity-40">HUM</span></span>
-          </div>
-          <div className="flex items-center gap-2">
-            <Wind className="w-3 h-3 text-blue-400" />
-            <span className="text-[10px] font-mono text-gray-300">12km/h <span className="opacity-40">WND</span></span>
+        {/* Weather Info Block */}
+        <div className="flex items-center gap-3">
+          <CloudSun className="w-7 h-7 text-blue-400" />
+          <div className="flex flex-col">
+            <div className="flex items-end gap-1">
+              <span className="text-white text-2xl font-black tracking-tighter leading-none">24°C</span>
+            </div>
+            <span className="text-gray-400 text-[10px] uppercase font-bold tracking-widest truncate max-w-[120px] mt-1">
+              {location}
+            </span>
           </div>
         </div>
-        
-        {/* Status indicator line */}
-        <div className="mt-4 h-1 bg-white/10 rounded-full overflow-hidden">
-          <motion.div 
-            className="h-full bg-blue-500 shadow-[0_0_10px_#3b82f6]"
-            animate={{ width: ["0%", "100%", "0%"] }}
-            transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
-          />
-        </div>
-      </div>
+      </motion.div>
     </div>
   );
 }

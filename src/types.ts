@@ -16,4 +16,7 @@ export interface Settings {
 export interface AppConfig {
   settings: Settings;
   playlist: MediaItem[];
+  side1?: MediaItem[];
+  side2?: MediaItem[];
+  side3?: MediaItem[];
 }

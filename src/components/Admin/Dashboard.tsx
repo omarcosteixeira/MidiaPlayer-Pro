@@ -33,11 +33,19 @@ export default function Dashboard({ onNavigate }: DashboardProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploadTargetId, setUploadTargetId] = useState<string | null>(null);
 
+  const [activeTab, setActiveTab] = useState<"playlist" | "side1" | "side2" | "side3">("playlist");
+
   useEffect(() => {
     const docRef = doc(db, "config", "main");
     const unsubscribe = onSnapshot(docRef, (docSnap) => {
       if (docSnap.exists()) {
-        setConfig(docSnap.data() as AppConfig);
+        const data = docSnap.data() as AppConfig;
+        setConfig({
+          ...data,
+          side1: data.side1 || [],
+          side2: data.side2 || [],
+          side3: data.side3 || []
+        });
         setLoading(false);
       } else {
         const defaultConfig: AppConfig = {
@@ -47,7 +55,10 @@ export default function Dashboard({ onNavigate }: DashboardProps) {
             displayTime: 10,
             theme: "modern",
           },
-          playlist: []
+          playlist: [],
+          side1: [],
+          side2: [],
+          side3: []
         };
         setConfig(defaultConfig);
         // Do not auto-save here to avoid redundant writes if the user just created the DB
@@ -92,34 +103,37 @@ export default function Dashboard({ onNavigate }: DashboardProps) {
     };
     setConfig({
       ...config,
-      playlist: [...config.playlist, newItem]
+      [activeTab]: [...(config[activeTab] || []), newItem]
     });
   };
 
   const updateMedia = (id: string, updates: Partial<MediaItem>) => {
     if (!config) return;
+    const list = config[activeTab] || [];
     setConfig({
       ...config,
-      playlist: config.playlist.map(item => item.id === id ? { ...item, ...updates } : item)
+      [activeTab]: list.map(item => item.id === id ? { ...item, ...updates } : item)
     });
   };
 
   const removeMedia = (id: string) => {
     if (!config) return;
+    const list = config[activeTab] || [];
     setConfig({
       ...config,
-      playlist: config.playlist.filter(item => item.id !== id)
+      [activeTab]: list.filter(item => item.id !== id)
     });
   };
 
   const moveMedia = (index: number, direction: 'up' | 'down') => {
     if (!config) return;
-    const newPlaylist = [...config.playlist];
+    const list = config[activeTab] || [];
+    const newPlaylist = [...list];
     const targetIndex = direction === 'up' ? index - 1 : index + 1;
     if (targetIndex < 0 || targetIndex >= newPlaylist.length) return;
     
     [newPlaylist[index], newPlaylist[targetIndex]] = [newPlaylist[targetIndex], newPlaylist[index]];
-    setConfig({ ...config, playlist: newPlaylist });
+    setConfig({ ...config, [activeTab]: newPlaylist });
   };
 
   const triggerUpload = (id: string) => {
@@ -211,9 +225,29 @@ export default function Dashboard({ onNavigate }: DashboardProps) {
       <main className="pt-24 pb-12 max-w-6xl mx-auto px-6 grid grid-cols-1 md:grid-cols-3 gap-8">
         {/* Playlist Section */}
         <div className="md:col-span-2 space-y-6">
+          <div className="flex items-center gap-4 mb-4 border-b border-gray-800 pb-2">
+            {[
+              { id: "playlist", label: "Principal (Meio)" },
+              { id: "side1", label: "Lateral 1" },
+              { id: "side2", label: "Lateral 2" },
+              { id: "side3", label: "Lateral 3" }
+            ].map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id as any)}
+                className={`pb-2 text-sm font-medium transition-colors relative ${activeTab === tab.id ? "text-blue-500" : "text-gray-400 hover:text-gray-200"}`}
+              >
+                {tab.label}
+                {activeTab === tab.id && (
+                  <motion.div layoutId="activeTab" className="absolute bottom-[-9px] left-0 right-0 h-0.5 bg-blue-500" />
+                )}
+              </button>
+            ))}
+          </div>
+
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-medium text-white flex items-center gap-2">
-              <Play className="w-5 h-5 text-green-500" /> Grade de Programação
+              <Play className="w-5 h-5 text-green-500" /> Grade: {activeTab === "playlist" ? "Principal" : `Lateral ${activeTab.replace("side", "")}`}
             </h2>
             <button 
               onClick={addMedia}
@@ -225,7 +259,7 @@ export default function Dashboard({ onNavigate }: DashboardProps) {
 
           <div className="space-y-4">
             <AnimatePresence>
-              {config.playlist.map((item, index) => (
+              {(config[activeTab] || []).map((item, index) => (
                 <motion.div 
                   key={item.id}
                   initial={{ opacity: 0, y: 20 }}
@@ -235,7 +269,7 @@ export default function Dashboard({ onNavigate }: DashboardProps) {
                 >
                   <div className="flex flex-col gap-2 pt-1">
                     <button onClick={() => moveMedia(index, 'up')} className="p-1 hover:text-white disabled:opacity-30" disabled={index === 0}><ChevronUp className="w-4 h-4" /></button>
-                    <button onClick={() => moveMedia(index, 'down')} className="p-1 hover:text-white disabled:opacity-30" disabled={index === config.playlist.length - 1}><ChevronDown className="w-4 h-4" /></button>
+                    <button onClick={() => moveMedia(index, 'down')} className="p-1 hover:text-white disabled:opacity-30" disabled={index === (config[activeTab] || []).length - 1}><ChevronDown className="w-4 h-4" /></button>
                   </div>
 
                   <div className="w-32 h-20 bg-gray-900 rounded-lg overflow-hidden flex-shrink-0 flex items-center justify-center relative group-hover:ring-2 ring-blue-500 transition-all">
@@ -323,7 +357,7 @@ export default function Dashboard({ onNavigate }: DashboardProps) {
               ))}
             </AnimatePresence>
 
-            {config.playlist.length === 0 && (
+            {(config[activeTab] || []).length === 0 && (
               <div className="text-center py-20 border-2 border-dashed border-gray-800 rounded-2xl">
                 <p className="text-gray-500">Sua grade está vazia. Comece adicionando uma mídia.</p>
               </div>
