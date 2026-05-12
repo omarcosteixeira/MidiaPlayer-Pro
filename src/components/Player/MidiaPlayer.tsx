@@ -33,6 +33,17 @@ export default function MidiaPlayer({ onNavigate }: MidiaPlayerProps) {
           }
           return prev;
         });
+      } else {
+        // If it doesn't exist, initialize with empty playlist to clear loading state
+        setConfig({
+          settings: {
+            weatherLocation: "São Paulo, BR",
+            newsUrl: "https://g1.globo.com/rss/g1/",
+            displayTime: 10,
+            theme: "modern",
+          },
+          playlist: []
+        });
       }
     });
 
