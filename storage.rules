@@ -1,0 +1,17 @@
+rules_version = '2';
+
+service firebase.storage {
+  match /b/{bucket}/o {
+    
+    // Permite leitura e upload de arquivos na pasta de mídia
+    // ATENÇÃO: O acesso está público pois não há autenticação configurada.
+    match /media/{allPaths=**} {
+      allow read, write: if true;
+    }
+    
+    // Bloqueia acesso a outros caminhos no storage
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}
