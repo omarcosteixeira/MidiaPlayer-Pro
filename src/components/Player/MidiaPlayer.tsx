@@ -92,6 +92,42 @@ export default function MidiaPlayer({ onNavigate }: MidiaPlayerProps) {
   );
 
   const playlist = config.playlist;
+
+  if (playlist.length === 0) return (
+    <div className="relative h-screen w-screen bg-black overflow-hidden flex flex-col items-center justify-center">
+      <div className="text-center space-y-6 z-10 p-12 bg-[#1a1a1a] border border-gray-800 rounded-3xl shadow-2xl">
+        <div className="w-20 h-20 bg-blue-500/20 rounded-full flex items-center justify-center mx-auto border border-blue-500/30">
+          <Layout className="w-10 h-10 text-blue-500" />
+        </div>
+        <div className="space-y-2">
+          <h2 className="text-3xl font-black text-white tracking-tight">Grade de Programação Vazia</h2>
+          <p className="text-gray-400 max-w-md mx-auto">Sua TV não tem nenhuma propaganda configurada no momento. Cadastre as imagens ou vídeos para iniciar a transmissão.</p>
+        </div>
+        <button 
+          onClick={onNavigate} 
+          className="mt-8 bg-blue-600 hover:bg-blue-700 text-white font-bold px-8 py-4 rounded-xl transition-all shadow-[0_0_40px_rgba(37,99,235,0.3)] hover:shadow-[0_0_60px_rgba(37,99,235,0.5)] active:scale-95"
+        >
+          Acessar Painel de Administrador
+        </button>
+      </div>
+
+      {/* Widgets Layer (Still visible) */}
+      <WeatherWidget location={config.settings.weatherLocation} />
+      <NewsTicker newsUrl={config.settings.newsUrl} />
+
+      {/* Bottom Right Brand */}
+      <div className="absolute bottom-24 right-12 flex items-center gap-3">
+        <div className="w-10 h-10 bg-white/10 backdrop-blur-md rounded-full flex items-center justify-center border border-white/20">
+          <Layout className="w-5 h-5 text-white/50" />
+        </div>
+        <div className="text-right">
+          <div className="text-white/60 text-[10px] font-bold uppercase tracking-widest">Powered by</div>
+          <div className="text-white text-sm font-black tracking-tight">MidiaPlayer PRO</div>
+        </div>
+      </div>
+    </div>
+  );
+
   const currentItem = playlist[currentIndex];
 
   return (
