@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { MediaItem } from "../../types";
 import { motion, AnimatePresence } from "motion/react";
+import MediaRenderer from "./MediaRenderer";
 
 interface SidePlayerProps {
   playlist: MediaItem[];
@@ -54,22 +55,10 @@ export default function SidePlayer({ playlist, defaultDuration }: SidePlayerProp
             transition={{ duration: 1 }}
             className="absolute inset-0"
           >
-            {currentItem.type === "image" ? (
-              <img 
-                src={currentItem.url} 
-                alt={currentItem.title}
-                className="w-full h-full object-cover"
-              />
-            ) : (
-              <video
-                src={currentItem.url}
-                autoPlay
-                muted
-                playsInline
-                className="w-full h-full object-cover"
-                onEnded={() => setCurrentIndex((prev) => (prev + 1) % playlist.length)}
-              />
-            )}
+            <MediaRenderer 
+              item={currentItem} 
+              onEnded={() => setCurrentIndex((prev) => (prev + 1) % playlist.length)} 
+            />
           </motion.div>
         )}
       </AnimatePresence>

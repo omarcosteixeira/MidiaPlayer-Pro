@@ -7,6 +7,7 @@ import { Maximize, Layout } from "lucide-react";
 import { db } from "../../lib/firebase";
 import { doc, onSnapshot } from "firebase/firestore";
 import SidePlayer from "./SidePlayer";
+import MediaRenderer from "./MediaRenderer";
 
 interface MidiaPlayerProps {
   onNavigate: () => void;
@@ -141,22 +142,10 @@ export default function MidiaPlayer({ onNavigate }: MidiaPlayerProps) {
                   transition={{ duration: 1.2, ease: "easeInOut" }}
                   className="absolute inset-0"
                 >
-                  {currentItem.type === "image" ? (
-                    <img 
-                      src={currentItem.url} 
-                      alt={currentItem.title}
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <video
-                      src={currentItem.url}
-                      autoPlay
-                      muted
-                      playsInline
-                      className="w-full h-full object-cover"
-                      onEnded={() => setCurrentIndex((prev) => (prev + 1) % playlist.length)}
-                    />
-                  )}
+                  <MediaRenderer 
+                    item={currentItem} 
+                    onEnded={() => setCurrentIndex((prev) => (prev + 1) % playlist.length)} 
+                  />
                   
                   {/* Overlay for Ticker Readability */}
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent pointer-events-none" />
