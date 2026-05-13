@@ -93,47 +93,68 @@ export default function Dashboard({ onNavigate }: DashboardProps) {
   };
 
   const addMedia = () => {
-    if (!config) return;
-    const newItem: MediaItem = {
-      id: Date.now().toString(),
-      type: "image",
-      url: "",
-      title: "Novo Item",
-      duration: 10
-    };
-    setConfig({
-      ...config,
-      [activeTab]: [...(config[activeTab] || []), newItem]
+    setConfig(prev => {
+      if (!prev) return prev;
+      const newItem: MediaItem = {
+        id: Date.now().toString(),
+        type: "image",
+        url: "",
+        title: "Novo Item",
+        duration: 10
+      };
+      return {
+        ...prev,
+        [activeTab]: [...(prev[activeTab] || []), newItem]
+      };
     });
   };
 
   const updateMedia = (id: string, updates: Partial<MediaItem>) => {
-    if (!config) return;
-    const list = config[activeTab] || [];
-    setConfig({
-      ...config,
-      [activeTab]: list.map(item => item.id === id ? { ...item, ...updates } : item)
+    setConfig(prev => {
+      if (!prev) return prev;
+      const list = prev[activeTab] || [];
+      return {
+        ...prev,
+        [activeTab]: list.map(item => item.id === id ? { ...item, ...updates } : item)
+      };
     });
   };
 
   const removeMedia = (id: string) => {
-    if (!config) return;
-    const list = config[activeTab] || [];
-    setConfig({
-      ...config,
-      [activeTab]: list.filter(item => item.id !== id)
+    setConfig(prev => {
+      if (!prev) return prev;
+      const list = prev[activeTab] || [];
+      return {
+        ...prev,
+        [activeTab]: list.filter(item => item.id !== id)
+      };
     });
   };
 
   const moveMedia = (index: number, direction: 'up' | 'down') => {
-    if (!config) return;
-    const list = config[activeTab] || [];
-    const newPlaylist = [...list];
-    const targetIndex = direction === 'up' ? index - 1 : index + 1;
-    if (targetIndex < 0 || targetIndex >= newPlaylist.length) return;
-    
-    [newPlaylist[index], newPlaylist[targetIndex]] = [newPlaylist[targetIndex], newPlaylist[index]];
-    setConfig({ ...config, [activeTab]: newPlaylist });
+    setConfig(prev => {
+      if (!prev) return prev;
+      const list = prev[activeTab] || [];
+      const newPlaylist = [...list];
+      const targetIndex = direction === 'up' ? index - 1 : index + 1;
+      if (targetIndex < 0 || targetIndex >= newPlaylist.length) return prev;
+      
+      [newPlaylist[index], newPlaylist[targetIndex]] = [newPlaylist[targetIndex], newPlaylist[index]];
+      return { ...prev, [activeTab]: newPlaylist };
+    });
+  };
+
+  const updateMediaGlobal = (id: string, updates: Partial<MediaItem>) => {
+    setConfig(prev => {
+      if (!prev) return prev;
+      return {
+        ...prev,
+        playlist: prev.playlist.map(item => item.id === id ? { ...item, ...updates } : item),
+        side1: (prev.side1 || []).map(item => item.id === id ? { ...item, ...updates } : item),
+        side2: (prev.side2 || []).map(item => item.id === id ? { ...item, ...updates } : item),
+        side3: (prev.side3 || []).map(item => item.id === id ? { ...item, ...updates } : item),
+      };
+    });
   };
 
   const triggerUpload = (id: string) => {
@@ -159,9 +180,9 @@ export default function Dashboard({ onNavigate }: DashboardProps) {
         const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
         setUploadProgress(prev => ({ ...prev, [uploadTargetId]: progress }));
       },
-      (error) => {
+      (error: any) => {
         console.error("Upload failed", error);
-        alert("Erro no upload do arquivo.");
+        alert(`Erro no upload: ${error.message || "Erro desconhecido"}\n\nSe for erro de permissão (unauthorized), altere as Regras do Storage no Firebase para: allow read, write: if true;`);
         setUploadProgress(prev => {
           const newProgress = { ...prev };
           delete newProgress[uploadTargetId];
@@ -174,7 +195,7 @@ export default function Dashboard({ onNavigate }: DashboardProps) {
         // Auto-detect type
         const type = file.type.startsWith("video/") ? "video" : "image";
         
-        updateMedia(uploadTargetId, { url: downloadURL, type });
+        updateMediaGlobal(uploadTargetId, { url: downloadURL, type });
         setUploadProgress(prev => {
           const newProgress = { ...prev };
           delete newProgress[uploadTargetId];
